@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>agent-farm-gauntlet · v0.1.0-gauntlet</title>
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link active" href="index.html">home</a>
+    <a class="nav-link" href="cold-boot.html">cold-boot</a>
+    <a class="nav-link" href="architecture.html">architecture</a>
+    <a class="nav-link" href="playback.html">playback</a>
+    <a class="nav-link" href="audit.html">audit</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<h1>agent-farm-gauntlet</h1>
+<p>Minimal Agent Task Ledger with WORM audit trail, Ed25519 signing, and formal verification.</p>
+<p><strong>Zero runtime dependencies.</strong> TypeScript + Node.js native http + JSONL storage.</p>
+
+<div class="grid grid-4" style="margin:24px 0">
+  <div class="stat"><div class="stat-num">54</div><div class="stat-label">Files</div></div>
+  <div class="stat"><div class="stat-num">21/21</div><div class="stat-label">Tests Pass</div></div>
+  <div class="stat"><div class="stat-num">8/8</div><div class="stat-label">WORM Entries</div></div>
+  <div class="stat"><div class="stat-num">7</div><div class="stat-label">Proven Theorems</div></div>
+</div>
+
+<h2>Quickstart</h2>
+<pre>git clone https://github.com/SNAPKITTYWEST/agent-farm-gauntlet.git
+cd agent-farm-gauntlet
+npm install
+npm run verify
+npm start</pre>
+<p>Server runs on <code>http://127.0.0.1:3847</code>.</p>
+
+<h2>Commands</h2>
+<table>
+  <tr><th>Command</th><th>Description</th></tr>
+  <tr><td><code>npm install</code></td><td>Install dependencies</td></tr>
+  <tr><td><code>npm run build</code></td><td>Compile TypeScript</td></tr>
+  <tr><td><code>npm test</code></td><td>Run 21 tests</td></tr>
+  <tr><td><code>npm start</code></td><td>Start server on :3847</td></tr>
+  <tr><td><code>npm run verify</code></td><td>Build + test + chain verify</td></tr>
+  <tr><td><code>node scripts/doctor.js</code></td><td>Check environment</td></tr>
+  <tr><td><code>node scripts/verify-chain.js</code></td><td>Verify WORM chain</td></tr>
+</table>
+
+<h2>Architecture</h2>
+<pre>
+┌─────────────────────────────────────────────────────────┐
+│                  CONSTITUTION                           │
+│  Supreme governance. Immutable. 86 lines.               │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                  TRUST DEED                             │
+│  TD-GAUNTLET-001. 4 obligations. 4 conditions.         │
+│  deployment_allowed := security ∧ compliance            │
+│                     ∧ logic ∧ human                     │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                  AGENT RUNTIME                          │
+│  8 source files. 996 lines. Ed25519 signing.            │
+│  HTTP server → Middleware → State machine → WORM        │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                  WORM LEDGER                            │
+│  8 entries. Hash-chained. Append-only. Sealed.          │
+└─────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>Security Model</h2>
+<table>
+  <tr><th>Control</th><th>Mechanism</th><th>Status</th></tr>
+  <tr><td>Agent Identity</td><td>Ed25519 keypairs</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>Request Signing</td><td>requireSignedAgent middleware</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>Hash Chain</td><td>SHA-256 with | delimiters</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>Atomic Writes</td><td>tmp → fsync → rename</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>File Locking</td><td>PID-based stale detection</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>Body Size Limit</td><td>100KB max</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>State Machine</td><td>Validated transitions</td><td><span class="badge badge-pass">ENFORCED</span></td></tr>
+  <tr><td>Tamper Detection</td><td>Hash chain (sorry in Lean)</td><td><span class="badge badge-warn">PARTIAL</span></td></tr>
+</table>
+
+<h2>Proven vs Modeled</h2>
+<table>
+  <tr><th>Property</th><th>Status</th><th>Location</th></tr>
+  <tr><td>deployment_allowed → security_passed</td><td><span class="badge badge-pass">PROVEN</span></td><td>TrustDeed.lean:34</td></tr>
+  <tr><td>deployment_allowed → human_approved</td><td><span class="badge badge-pass">PROVEN</span></td><td>TrustDeed.lean:39</td></tr>
+  <tr><td>trust_deed_is_supreme</td><td><span class="badge badge-pass">PROVEN</span></td><td>TrustDeed.lean:82</td></tr>
+  <tr><td>completed_is_terminal</td><td><span class="badge badge-pass">PROVEN</span></td><td>TaskInvariants.lean:33</td></tr>
+  <tr><td>rejected_is_terminal</td><td><span class="badge badge-pass">PROVEN</span></td><td>TaskInvariants.lean:38</td></tr>
+  <tr><td>pending_cannot_complete</td><td><span class="badge badge-pass">PROVEN</span></td><td>TaskInvariants.lean:43</td></tr>
+  <tr><td>in_progress_cannot_rollback</td><td><span class="badge badge-pass">PROVEN</span></td><td>TaskInvariants.lean:48</td></tr>
+  <tr><td>tamper_detected</td><td><span class="badge badge-warn">sorry</span></td><td>LedgerChain.lean:72</td></tr>
+  <tr><td>chain_implies_monotonic</td><td><span class="badge badge-warn">sorry</span></td><td>LedgerChain.lean:87</td></tr>
+</table>
+
+<h2>API</h2>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td>GET</td><td><code>/health</code></td><td>Health check</td></tr>
+  <tr><td>GET</td><td><code>/cold-boot</code></td><td>Cold boot visualization</td></tr>
+  <tr><td>GET</td><td><code>/agents/:name/public-key</code></td><td>Agent public key</td></tr>
+  <tr><td>POST</td><td><code>/tasks</code></td><td>Create task (signed)</td></tr>
+  <tr><td>GET</td><td><code>/tasks</code></td><td>List tasks</td></tr>
+  <tr><td>GET</td><td><code>/tasks/:id</code></td><td>Get task</td></tr>
+  <tr><td>POST</td><td><code>/tasks/:id/start</code></td><td>Start task (signed)</td></tr>
+  <tr><td>POST</td><td><code>/tasks/:id/complete</code></td><td>Complete task (signed)</td></tr>
+  <tr><td>POST</td><td><code>/tasks/:id/reject</code></td><td>Reject task (signed)</td></tr>
+  <tr><td>GET</td><td><code>/worm</code></td><td>View WORM chain</td></tr>
+  <tr><td>POST</td><td><code>/worm/verify</code></td><td>Verify chain integrity</td></tr>
+</table>
+
+<h2>Project Structure</h2>
+<div class="card"><div class="card-body"><div class="tree">
+<div><span class="dir">agent-farm-gauntlet/</span></div>
+<div>&nbsp;&nbsp;<span class="dir">constitution/</span> <span class="md">— Supreme governance (immutable)</span></div>
+<div>&nbsp;&nbsp;<span class="dir">deeds/</span> <span class="md">— Trust Deed TD-GAUNTLET-001</span></div>
+<div>&nbsp;&nbsp;<span class="dir">schemas/</span> <span class="json">— Task and LedgerEntry JSON schemas</span></div>
+<div>&nbsp;&nbsp;<span class="dir">agents/</span> <span class="md">— FORGE, SENTINEL, LEDGE, OPERATOR</span></div>
+<div>&nbsp;&nbsp;<span class="dir">proofs/</span> <span class="lean">— Lean 4 formal specifications</span></div>
+<div>&nbsp;&nbsp;<span class="dir">apps/agent-task-ledger/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">src/</span> <span class="ts">— 8 source files, 996 lines</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">tests/</span> <span class="ts">— 21 tests, 10 suites</span></div>
+<div>&nbsp;&nbsp;<span class="dir">worm/</span> <span class="json">— 8 WORM entries</span></div>
+<div>&nbsp;&nbsp;<span class="dir">audit/</span> <span class="md">— Audit trail and reports</span></div>
+<div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="ts">— doctor, verify-chain, demo</span></div>
+<div>&nbsp;&nbsp;<span class="dir">docs/</span> <span class="md">— This documentation site</span></div>
+</div></div></div>
+
+<h2>License</h2>
+<p>MIT</p>
+
+<div class="footer">
+  <p>agent-farm-gauntlet v0.1.0-gauntlet · FROZEN · No proof. No deployment. No exceptions.</p>
+  <p><a href="https://github.com/SNAPKITTYWEST/agent-farm-gauntlet">github.com/SNAPKITTYWEST/agent-farm-gauntlet</a></p>
+</div>
+
+</div>
+</body>
+</html>

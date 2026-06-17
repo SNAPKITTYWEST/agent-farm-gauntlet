@@ -117,7 +117,8 @@ agent-farm-gauntlet/
 │   └── tests/             Test suite (21 tests, 10 suites)
 ├── audit/                 Audit trail and reports
 ├── worm/                  WORM chain entries
-└── scripts/               Operational scripts
+├── scripts/               Operational scripts
+└── docs/                  GitHub Pages documentation site
 ```
 
 ## API
@@ -136,6 +137,20 @@ See [API.md](API.md) for full documentation.
 | POST | `/tasks/:id/reject` | Reject task (signed) |
 | GET | `/worm` | View WORM chain |
 | POST | `/worm/verify` | Verify chain integrity |
+
+## Documentation Site
+
+Static docs served via GitHub Pages from `docs/`:
+
+| Page | Description |
+|------|-------------|
+| [Landing](docs/index.html) | Project overview, start command |
+| [Cold Boot](docs/cold-boot.html) | Animated terminal visualization |
+| [Architecture](docs/architecture.html) | Governance stack, file tree, security model |
+| [Playback](docs/playback.html) | Forensic timeline reconstruction |
+| [Audit](docs/audit.html) | 25 findings, control matrix, axiom review |
+
+**Enable Pages:** Settings → Pages → Source: "Deploy from a branch" → Branch: `main` → Folder: `/docs`
 
 ## License
 

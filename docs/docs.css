@@ -1,0 +1,59 @@
+/* docs.css — GitHub Pages documentation site */
+:root{--bg:#0a0a0a;--fg:#00ff41;--dim:#00aa2a;--bright:#33ff77;--err:#ff3333;--warn:#ffaa00;--info:#00aaff;--border:#003300;--panel:#0d0d0d;--surface:#111;--font:'Courier New',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.7;font-size:14px}
+a{color:var(--info);text-decoration:none}a:hover{color:var(--bright);text-decoration:underline}
+::selection{background:var(--fg);color:var(--bg)}
+pre{background:var(--surface);border:1px solid var(--border);padding:16px;overflow-x:auto;font-size:13px;line-height:1.5;margin:16px 0}
+code{font-family:var(--font);font-size:13px}
+:not(pre)>code{background:var(--surface);padding:2px 6px;border:1px solid var(--border);font-size:12px}
+h1{font-size:28px;font-weight:normal;color:var(--bright);margin:32px 0 16px;letter-spacing:1px}
+h2{font-size:18px;font-weight:normal;color:var(--bright);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+h3{font-size:14px;font-weight:normal;color:var(--bright);margin:16px 0 8px}
+p{margin:8px 0;color:var(--dim)}
+strong{color:var(--fg)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+td{padding:10px 12px;border-bottom:1px solid #111}
+tr:hover td{background:#0a0f0a}
+.nav{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;height:48px}
+.nav-brand{color:var(--bright);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-right:24px;white-space:nowrap}
+.nav-links{display:flex;gap:0}
+.nav-link{padding:14px 16px;font-size:11px;color:var(--dim);border-bottom:2px solid transparent;transition:all .2s}
+.nav-link:hover{color:var(--fg);text-decoration:none}
+.nav-link.active{color:var(--bright);border-bottom-color:var(--fg)}
+.container{max-width:960px;margin:0 auto;padding:24px}
+.badge{display:inline-block;padding:2px 8px;font-size:10px;border:1px solid;letter-spacing:1px}
+.badge-pass{border-color:var(--fg);color:var(--fg)}
+.badge-warn{border-color:var(--warn);color:var(--warn)}
+.badge-err{border-color:var(--err);color:var(--err)}
+.badge-info{border-color:var(--info);color:var(--info)}
+.card{border:1px solid var(--border);background:var(--panel);margin:16px 0}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center}
+.card-title{font-size:11px;color:var(--bright);letter-spacing:1px;text-transform:uppercase}
+.card-body{padding:16px}
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.stat{text-align:center;padding:16px;border:1px solid var(--border);background:var(--surface)}
+.stat-num{font-size:28px;color:var(--bright)}
+.stat-label{font-size:10px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.tree{font-size:13px;line-height:2}
+.tree .dir{color:var(--info)}
+.tree .file{color:var(--fg)}
+.tree .md{color:var(--dim)}
+.tree .ts{color:var(--bright)}
+.tree .lean{color:var(--warn)}
+.tree .json{color:#ff77ff}
+.timeline{position:relative;padding-left:32px;margin:16px 0}
+.timeline::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item{position:relative;padding:12px 0 12px 20px}
+.tl-dot{position:absolute;left:-25px;top:16px;width:10px;height:10px;border-radius:50%;border:2px solid var(--border);background:var(--bg)}
+.tl-dot.active{border-color:var(--fg);background:var(--fg);box-shadow:0 0 8px var(--fg)}
+.tl-dot.pass{border-color:var(--fg)}
+.tl-time{font-size:10px;color:var(--dim)}
+.tl-title{font-size:14px;color:var(--bright);margin:4px 0}
+.tl-desc{font-size:12px;color:var(--dim)}
+.footer{border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--dim);font-size:11px;margin-top:48px}

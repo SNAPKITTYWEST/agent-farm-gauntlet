@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>playback · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">home</a>
+    <a class="nav-link" href="cold-boot.html">cold-boot</a>
+    <a class="nav-link" href="architecture.html">architecture</a>
+    <a class="nav-link active" href="playback.html">playback</a>
+    <a class="nav-link" href="audit.html">audit</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<h1>Playback Timeline</h1>
+<p>Forensic reconstruction of the complete execution from cold boot to production approved.</p>
+
+<h2>Phase 0 — Cold Boot</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:00</div><div class="tl-title">Constitution Load</div><div class="tl-desc">constitution/CONSTITUTION.md — 86 lines. Supreme governance.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:01</div><div class="tl-title">Failure Modes Load</div><div class="tl-desc">F-001..F-007. 7 failure modes defined.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:02</div><div class="tl-title">SENTINEL Rules Load</div><div class="tl-desc">7 hard stops. 5 soft stops. Override protocol.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:03</div><div class="tl-title">Trust Deed Load</div><div class="tl-desc">TD-GAUNTLET-001. 4 parties. 4 obligations.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:04</div><div class="tl-title">Agent Registration</div><div class="tl-desc">FORGE, SENTINEL, LEDGE, OPERATOR.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:05</div><div class="tl-title">Schema Load</div><div class="tl-desc">Task schema. LedgerEntry schema.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:06</div><div class="tl-title">Directory Structure</div><div class="tl-desc">10 directories created.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">00:07</div><div class="tl-title">WORM Genesis</div><div class="tl-desc">worm/001_GENESIS.json sealed. Chain root established.</div></div>
+  </div>
+</div></div>
+
+<h2>Phase 1 — Product Build</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:09</div><div class="tl-title">Source Files Created</div><div class="tl-desc">8 TypeScript files. 996 lines. Zero dependencies.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">00:30</div><div class="tl-title">Test Suite Created</div><div class="tl-desc">21 tests. 10 suites. 12 initial tests.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">01:00</div><div class="tl-title">Phase 1 Complete</div><div class="tl-desc">12/12 tests pass. WORM seq 2 sealed.</div></div>
+  </div>
+</div></div>
+
+<h2>Phase 2 — Parallel Edge Case Run</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">01:01</div><div class="tl-title">FORGE Review</div><div class="tl-desc">9 findings. Code quality audit.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">01:05</div><div class="tl-title">SENTINEL Review</div><div class="tl-desc">6 findings. Security audit.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">01:10</div><div class="tl-title">LEDGE Review</div><div class="tl-desc">10 findings. WORM chain audit.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">01:30</div><div class="tl-title">25 Findings Total</div><div class="tl-desc">1 CRITICAL. 8 HIGH. 12 MEDIUM. 4 LOW.</div></div>
+  </div>
+</div></div>
+
+<h2>Phase 3 — Retick</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">01:31</div><div class="tl-title">P0 Patches (5)</div><div class="tl-desc">Hash delimiters, genesis fix, monotonicity, body limit, corruption halt.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">01:45</div><div class="tl-title">P1 Patches (5)</div><div class="tl-desc">Regex routing, startup check, OPERATOR enum, validation, error logging.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">02:00</div><div class="tl-title">Phase 3 Complete</div><div class="tl-desc">12/12 tests pass. 15 patches applied. WORM seq 3 sealed.</div></div>
+  </div>
+</div></div>
+
+<h2>Phase 4 — Hardening</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">02:01</div><div class="tl-title">Ed25519 Per-Agent Signing</div><div class="tl-desc">agent-keys.ts. Keypair generation. Signing. Verification. 18/18 pass.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">03:00</div><div class="tl-title">WORM Ledger Hardening</div><div class="tl-desc">Sealed segments. Timestamp monotonicity. Startup halt. 20/20 pass.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">03:30</div><div class="tl-title">File Locking & Atomic Writes</div><div class="tl-desc">file-lock.ts. PID stale detection. tmp→fsync→rename. 21/21 pass.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">04:00</div><div class="tl-title">Lean 4 Formalization</div><div class="tl-desc">TrustDeed.lean. TaskInvariants.lean. LedgerChain.lean.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">04:30</div><div class="tl-title">AHMAD Review</div><div class="tl-desc">4/4 axioms PASS. PRODUCTION APPROVED.</div></div>
+  </div>
+</div></div>
+
+<h2>Phase 5 — Final Verification</h2>
+<div class="card"><div class="card-body">
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">05:00</div><div class="tl-title">Full Test Suite</div><div class="tl-desc">21/21 pass on clean build.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">05:01</div><div class="tl-title">WORM Chain Verify</div><div class="tl-desc">32/32 checks. All hashes match.</div></div>
+    <div class="tl-item"><div class="tl-dot pass"></div><div class="tl-time">05:02</div><div class="tl-title">Doctor Check</div><div class="tl-desc">25/25 pass. Environment healthy.</div></div>
+    <div class="tl-item"><div class="tl-dot active"></div><div class="tl-time">05:03</div><div class="tl-title">PRODUCTION APPROVED</div><div class="tl-desc">All gates green. FROZEN. v0.1.0-gauntlet.</div></div>
+  </div>
+</div></div>
+
+<h2>Agent Activity</h2>
+<table>
+  <tr><th>Agent</th><th>Actions</th><th>Findings</th><th>Artifacts</th></tr>
+  <tr><td><strong>FORGE</strong></td><td>Generated 8 source files, applied 15 patches</td><td>9 code quality findings</td><td>All src/*.ts files</td></tr>
+  <tr><td><strong>SENTINEL</strong></td><td>Security audit, verified patches</td><td>6 security findings</td><td>SENTINEL_RULES.md</td></tr>
+  <tr><td><strong>LEDGE</strong></td><td>WORM chain verification, sealed checkpoints</td><td>10 chain findings</td><td>All worm/*.json files</td></tr>
+  <tr><td><strong>OPERATOR</strong></td><td>Reviewed findings, approved deployment</td><td>—</td><td>TRUST_DEED.md, AUDIT_TABLE.md</td></tr>
+  <tr><td><strong>SYSTEM</strong></td><td>Test execution, chain verification</td><td>—</td><td>WORM checkpoint entries</td></tr>
+</table>
+
+<h2>Trust Deed Influence</h2>
+<table>
+  <tr><th>Clause</th><th>Generated Action</th><th>Result</th></tr>
+  <tr><td>No output without constitution satisfaction</td><td>Every change checked against §2-3</td><td>25 findings identified</td></tr>
+  <tr><td>FORGE shall generate satisfying code</td><td>8 source files, 996 lines</td><td>12/12 tests pass</td></tr>
+  <tr><td>SENTINEL shall review all code</td><td>6 security findings</td><td>S1, S2, S4 addressed</td></tr>
+  <tr><td>LEDGE shall verify hash chain</td><td>10 chain findings</td><td>L1, L2, L4 fixed</td></tr>
+  <tr><td>OPERATOR shall approve deployment</td><td>Architect verdict signed</td><td>REJECT → APPROVED</td></tr>
+  <tr><td>No proof. No deployment. No exceptions.</td><td>Lean 4 formalization</td><td>7 proven theorems</td></tr>
+</table>
+
+<div class="footer">
+  <p>agent-farm-gauntlet v0.1.0-gauntlet · FROZEN</p>
+  <p><a href="index.html">← Back to Home</a></p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>audit · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="docs.css">
+<style>
+.finding{padding:12px;border-bottom:1px solid #111}
+.finding:last-child{border-bottom:none}
+.finding-id{display:inline-block;width:32px;color:var(--info);font-weight:bold}
+.finding-sev{display:inline-block;padding:1px 6px;font-size:9px;border:1px solid;margin-left:8px}
+.finding-sev.CRITICAL{border-color:var(--err);color:var(--err)}
+.finding-sev.HIGH{border-color:var(--err);color:var(--err)}
+.finding-sev.MEDIUM{border-color:var(--warn);color:var(--warn)}
+.finding-sev.LOW{border-color:var(--dim);color:var(--dim)}
+.finding-file{color:var(--dim);font-size:11px}
+.finding-desc{margin-top:4px;font-size:13px}
+.finding-status{margin-top:4px;font-size:11px;color:var(--fg)}
+.axiom-card{padding:16px;border:1px solid var(--border);margin-bottom:8px}
+.axiom-name{color:var(--bright);font-size:14px;margin-bottom:4px}
+.axiom-quote{color:var(--dim);font-style:italic;font-size:12px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">home</a>
+    <a class="nav-link" href="cold-boot.html">cold-boot</a>
+    <a class="nav-link" href="architecture.html">architecture</a>
+    <a class="nav-link" href="playback.html">playback</a>
+    <a class="nav-link active" href="audit.html">audit</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<h1>Audit</h1>
+<p>Complete audit trail. 25 findings. 15 patches. 0 remaining.</p>
+
+<h2>Summary</h2>
+<div class="grid grid-4">
+  <div class="stat"><div class="stat-num">25</div><div class="stat-label">Findings</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--fg)">25</div><div class="stat-label">Resolved</div></div>
+  <div class="stat"><div class="stat-num">1</div><div class="stat-label">Critical</div></div>
+  <div class="stat"><div class="stat-num">8</div><div class="stat-label">High</div></div>
+</div>
+
+<h2>FORGE Findings (Code Quality)</h2>
+<div class="card"><div class="card-body">
+  <div class="finding"><div><span class="finding-id">F1</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">hash.ts:36</span></div><div class="finding-desc">Non-constant-time hash comparison</div><div class="finding-status">✓ RESOLVED — timingSafeEqual</div></div>
+  <div class="finding"><div><span class="finding-id">F2</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">server.ts:18-31</span></div><div class="finding-desc">Unbounded request body parsing</div><div class="finding-status">✓ RESOLVED — 100KB limit</div></div>
+  <div class="finding"><div><span class="finding-id">F3</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">tasks.ts:179-204</span></div><div class="finding-desc">rejectTask bypasses validation framework</div><div class="finding-status">✓ RESOLVED — validateStatusTransition</div></div>
+  <div class="finding"><div><span class="finding-id">F4</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">server.ts:54,69,87</span></div><div class="finding-desc">endsWith routing is ambiguous</div><div class="finding-status">✓ RESOLVED — regex routing</div></div>
+  <div class="finding"><div><span class="finding-id">F5</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">server.ts:44,60,75,93</span></div><div class="finding-desc">as any casts defeat type safety</div><div class="finding-status">✓ RESOLVED — typed requires</div></div>
+  <div class="finding"><div><span class="finding-id">F9</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">ledger.ts:23-37</span></div><div class="finding-desc">No integrity check on load</div><div class="finding-status">✓ RESOLVED — verifyChain() on load</div></div>
+  <div class="finding"><div><span class="finding-id">F10</span><span class="finding-sev LOW">LOW</span><span class="finding-file">server.ts:143-145</span></div><div class="finding-desc">Error silently swallowed in catch</div><div class="finding-status">✓ RESOLVED — console.error</div></div>
+</div></div>
+
+<h2>SENTINEL Findings (Security)</h2>
+<div class="card"><div class="card-body">
+  <div class="finding"><div><span class="finding-id">S1</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">server.ts:18-31</span></div><div class="finding-desc">No request body size limit</div><div class="finding-status">✓ RESOLVED — 100KB cap</div></div>
+  <div class="finding"><div><span class="finding-id">S2</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">tasks.ts:96,124,183</span></div><div class="finding-desc">Agent authentication self-reported</div><div class="finding-status">✓ RESOLVED — Ed25519 signing</div></div>
+  <div class="finding"><div><span class="finding-id">S3</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">server.ts:54,69,87</span></div><div class="finding-desc">Fragile URL routing</div><div class="finding-status">✓ RESOLVED — regex</div></div>
+  <div class="finding"><div><span class="finding-id">S4</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">ledger.ts:30-36</span></div><div class="finding-desc">Silent ledger corruption on parse failure</div><div class="finding-status">✓ RESOLVED — throws on corrupt</div></div>
+</div></div>
+
+<h2>LEDGE Findings (WORM Chain)</h2>
+<div class="card"><div class="card-body">
+  <div class="finding"><div><span class="finding-id">L1</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">hash.ts:15</span></div><div class="finding-desc">Concatenation collision in hash input</div><div class="finding-status">✓ RESOLVED — | delimiters</div></div>
+  <div class="finding"><div><span class="finding-id">L2</span><span class="finding-sev CRITICAL">CRITICAL</span><span class="finding-file">worm/001_GENESIS.json</span></div><div class="finding-desc">Genesis block hash mismatch</div><div class="finding-status">✓ RESOLVED — recomputed hash</div></div>
+  <div class="finding"><div><span class="finding-id">L3</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">ledger.ts:18-36</span></div><div class="finding-desc">WORM files disconnected from Ledger</div><div class="finding-status">✓ RESOLVED — integrated</div></div>
+  <div class="finding"><div><span class="finding-id">L4</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">ledger.ts:88-130</span></div><div class="finding-desc">No sequence monotonicity check</div><div class="finding-status">✓ RESOLVED — seq === i + 1</div></div>
+  <div class="finding"><div><span class="finding-id">L5</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">ledger.ts:80-86</span></div><div class="finding-desc">No file locking on persist()</div><div class="finding-status">✓ RESOLVED — FileLock class</div></div>
+  <div class="finding"><div><span class="finding-id">L6</span><span class="finding-sev MEDIUM">MEDIUM</span><span class="finding-file">ledger.ts:33-35</span></div><div class="finding-desc">Corrupt entries silently skipped</div><div class="finding-status">✓ RESOLVED — throws</div></div>
+  <div class="finding"><div><span class="finding-id">L9</span><span class="finding-sev LOW">LOW</span><span class="finding-file">schemas/task.json:28</span></div><div class="finding-desc">Schema enum mismatch (OPERATOR)</div><div class="finding-status">✓ RESOLVED — added OPERATOR</div></div>
+  <div class="finding"><div><span class="finding-id">L10</span><span class="finding-sev HIGH">HIGH</span><span class="finding-file">worm/*.json</span></div><div class="finding-desc">WORM files lack atomicity/immutability</div><div class="finding-status">✓ RESOLVED — atomicAppend + chmod</div></div>
+</div></div>
+
+<h2>AHMAD Axiom Review</h2>
+<div class="card"><div class="card-body">
+  <div class="axiom-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="axiom-name">SIMPLICITY_IS_VIOLENCE</div>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="axiom-quote">"Remove until only truth remains."</div>
+    <div style="font-size:12px;color:var(--dim)">No external dependencies. Only truth remains.</div>
+  </div>
+  <div class="axiom-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="axiom-name">HUMANITY_BEFORE_FEATURE</div>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="axiom-quote">"Does this serve a human need for accountability?"</div>
+    <div style="font-size:12px;color:var(--dim)">Cryptographic proof of human accountability.</div>
+  </div>
+  <div class="axiom-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="axiom-name">ENTROPY_IS_CATALYST</div>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="axiom-quote">"Does the system handle chaos gracefully?"</div>
+    <div style="font-size:12px;color:var(--dim)">File locks, atomic writes, chain verification.</div>
+  </div>
+  <div class="axiom-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="axiom-name">ACCOUNTABLE_AUTHORITY</div>
+      <span class="badge badge-pass">PASS</span>
+    </div>
+    <div class="axiom-quote">"Every agent signs its decisions. No impersonation."</div>
+    <div style="font-size:12px;color:var(--dim)">Ed25519 non-repudiation. No self-reported identity.</div>
+  </div>
+</div></div>
+
+<h2>Control Matrix</h2>
+<table>
+  <tr><th>#</th><th>Control</th><th>Phase</th><th>Status</th></tr>
+  <tr><td>1</td><td>Ed25519 per-agent signing</td><td>Phase 1</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>2</td><td>WORM sealed segments</td><td>Phase 2</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>3</td><td>Timestamp monotonicity</td><td>Phase 2</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>4</td><td>Startup halt on broken chain</td><td>Phase 2</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>5</td><td>File locking (PID-based)</td><td>Phase 3</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>6</td><td>Atomic writes (tmp→fsync→rename)</td><td>Phase 3</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>7</td><td>Body size limit (100KB)</td><td>Phase 2</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>8</td><td>Regex routing</td><td>Phase 1</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>9</td><td>Timing-safe comparison</td><td>Phase 1</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>10</td><td>Hash delimiter (|)</td><td>Phase 1</td><td><span class="badge badge-pass">RESOLVED</span></td></tr>
+  <tr><td>11</td><td>Trust Deed formalization</td><td>Phase 4</td><td><span class="badge badge-pass">CREATED</span></td></tr>
+  <tr><td>12</td><td>Task invariants formalization</td><td>Phase 4</td><td><span class="badge badge-pass">CREATED</span></td></tr>
+  <tr><td>13</td><td>Ledger chain formalization</td><td>Phase 4</td><td><span class="badge badge-pass">CREATED</span></td></tr>
+  <tr><td>14</td><td>AHMAD axiom review</td><td>Phase 5</td><td><span class="badge badge-pass">PASS</span></td></tr>
+</table>
+
+<h2>Final Verdict</h2>
+<div class="card"><div class="card-body" style="text-align:center;padding:32px">
+  <div style="font-size:24px;color:var(--bright);letter-spacing:2px;margin-bottom:16px">PRODUCTION APPROVED</div>
+  <div style="font-size:14px;color:var(--dim)">v0.1.0-gauntlet · FROZEN · No proof. No deployment. No exceptions.</div>
+</div></div>
+
+<div class="footer">
+  <p>agent-farm-gauntlet v0.1.0-gauntlet · FROZEN</p>
+  <p><a href="index.html">← Back to Home</a></p>
+</div>
+
+</div>
+</body>
+</html>

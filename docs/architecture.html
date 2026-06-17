@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>architecture · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">home</a>
+    <a class="nav-link" href="cold-boot.html">cold-boot</a>
+    <a class="nav-link active" href="architecture.html">architecture</a>
+    <a class="nav-link" href="playback.html">playback</a>
+    <a class="nav-link" href="audit.html">audit</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<h1>Architecture</h1>
+<p>Inverted repository structure. Constitution is the root. Everything descends from it.</p>
+
+<h2>Governance Stack</h2>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                  CONSTITUTION                               │
+│  constitution/CONSTITUTION.md (86 lines)                    │
+│  Supreme governance. Immutable.                             │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  TRUST DEED                                 │
+│  deeds/TRUST_DEED.md (48 lines)                             │
+│  TD-GAUNTLET-001. Multi-party obligations.                  │
+│  deployment_allowed := security ∧ compliance                │
+│                     ∧ logic ∧ human                         │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  AGENT RUNTIME                              │
+│  8 source files. 996 lines. Zero runtime dependencies.      │
+│  HTTP server → Middleware → State machine → WORM ledger     │
+│  Ed25519 signing → Hash chain → Atomic writes → File lock   │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  SENTINEL REVIEW                            │
+│  Security audit. Injection check. Auth verification.        │
+│  25 findings. 15 patches. 0 remaining.                      │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  LEAN PROOF LAYER                           │
+│  3 files. 7 proven theorems. 2 sorry. 5 axioms.            │
+│  TrustDeed.lean · TaskInvariants.lean · LedgerChain.lean    │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  HUMAN APPROVAL                             │
+│  OPERATOR: Jessica Westerhoff                               │
+│  Final authority. Override power. Deployment gate.          │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  DEPLOYMENT GATE                            │
+│  4 conditions from Trust Deed:                              │
+│  1. security_passed = true (SENTINEL approved)             │
+│  2. compliance_passed = true (constitution satisfied)      │
+│  3. logic_passed = true (tests pass)                       │
+│  4. human_approved = true (operator signed)                │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  WORM LEDGER                                │
+│  Append-only JSONL. SHA-256 hash chain.                     │
+│  Ed25519 signatures. Sealed segments.                       │
+│  Atomic writes. File locking. Tamper-evident.               │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+
+<h2>Source Files</h2>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><code>src/types.ts</code></td><td>50</td><td>AgentName, TaskStatus, LedgerEntryType, Task, LedgerEntry</td></tr>
+  <tr><td><code>src/hash.ts</code></td><td>37</td><td>SHA-256 hashing with | delimiters, timing-safe compare</td></tr>
+  <tr><td><code>src/validation.ts</code></td><td>57</td><td>Input validation, state transition validation</td></tr>
+  <tr><td><code>src/ledger.ts</code></td><td>196</td><td>WORM ledger, hash chain, sealed segments, signature verification</td></tr>
+  <tr><td><code>src/tasks.ts</code></td><td>184</td><td>Task CRUD, state machine, agent authorization</td></tr>
+  <tr><td><code>src/server.ts</code></td><td>281</td><td>HTTP server, signed middleware, regex routing</td></tr>
+  <tr><td><code>src/agent-keys.ts</code></td><td>132</td><td>Ed25519 keypair generation, signing, verification</td></tr>
+  <tr><td><code>src/file-lock.ts</code></td><td>101</td><td>File locking, atomic writes, PID stale detection</td></tr>
+</table>
+
+<h2>Task State Machine</h2>
+<pre>
+pending ──→ in_progress ──→ completed
+                │
+                └──→ rejected
+
+Valid transitions:
+  pending     → in_progress
+  pending     → rejected
+  in_progress → completed
+  in_progress → rejected
+
+Terminal states: completed, rejected
+</pre>
+
+<h2>Request Flow</h2>
+<pre>
+HTTP Request
+    │
+    ▼
+┌─────────────────────┐
+│  parseBody()        │  100KB limit
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│  requireSignedAgent │  Ed25519 verification
+│  ├── agent in set?  │
+│  ├── key matches?   │
+│  ├── sig valid?     │
+│  └── hash matches?  │
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│  Task Manager       │  State machine validation
+│  ├── createTask     │
+│  ├── startTask      │
+│  ├── completeTask   │
+│  └── rejectTask     │
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│  Ledger.append()    │  WORM entry
+│  ├── hash chain     │
+│  ├── signature      │
+│  ├── atomic write   │
+│  └── file lock      │
+└─────────┬───────────┘
+          │
+          ▼
+     HTTP Response
+</pre>
+
+<h2>Hash Chain</h2>
+<pre>
+Entry[i].hash = SHA256(
+  seq | type | agent | timestamp | payload | prev_hash
+)
+
+Entry[i].prev_hash = Entry[i-1].hash
+
+Entry[1].prev_hash = "0000...0000" (genesis)
+
+Tamper detection:
+  Modify Entry[3]
+    → Entry[4].prev_hash mismatch → CHAIN BREAK
+    → Recompute Entry[4].hash
+    → Entry[5].prev_hash mismatch → CASCADE
+</pre>
+
+<h2>File Tree</h2>
+<div class="card"><div class="card-body"><div class="tree">
+<div><span class="dir">agent-farm-gauntlet/</span></div>
+<div>&nbsp;&nbsp;<span class="dir">constitution/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">CONSTITUTION.md</span> <span style="color:var(--dim)">— 62 lines, supreme governance</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">SENTINEL_RULES.md</span> <span style="color:var(--dim)">— 28 lines, stop conditions</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">FAILURE_MODES.md</span> <span style="color:var(--dim)">— 36 lines, F-001..F-007</span></div>
+<div>&nbsp;&nbsp;<span class="dir">deeds/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">TRUST_DEED.md</span> <span style="color:var(--dim)">— 48 lines, TD-GAUNTLET-001</span></div>
+<div>&nbsp;&nbsp;<span class="dir">schemas/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">task.json</span> <span style="color:var(--dim)">— 60 lines</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">ledger.json</span> <span style="color:var(--dim)">— 68 lines</span></div>
+<div>&nbsp;&nbsp;<span class="dir">agents/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">ALLOWED_AGENTS.md</span> <span style="color:var(--dim)">— 14 lines</span></div>
+<div>&nbsp;&nbsp;<span class="dir">proofs/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">TrustDeed.lean</span> <span style="color:var(--dim)">— 70 lines, 3 proven</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">TaskInvariants.lean</span> <span style="color:var(--dim)">— 76 lines, 4 proven</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">LedgerChain.lean</span> <span style="color:var(--dim)">— 89 lines, 2 sorry</span></div>
+<div>&nbsp;&nbsp;<span class="dir">apps/agent-task-ledger/</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">src/</span> <span class="ts">— 8 files, 996 lines</span></div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">tests/</span> <span class="ts">— 21 tests, 291 lines</span></div>
+<div>&nbsp;&nbsp;<span class="dir">worm/</span> <span class="json">— 8 entries, hash-chained</span></div>
+<div>&nbsp;&nbsp;<span class="dir">audit/</span> <span class="md">— 6 reports, 1,497 lines</span></div>
+<div>&nbsp;&nbsp;<span class="dir">scripts/</span> <span class="ts">— doctor, verify-chain, demo</span></div>
+<div>&nbsp;&nbsp;<span class="dir">docs/</span> <span class="md">— This site</span></div>
+</div></div></div>
+
+<div class="footer">
+  <p>agent-farm-gauntlet v0.1.0-gauntlet · FROZEN</p>
+  <p><a href="index.html">← Back to Home</a></p>
+</div>
+
+</div>
+</body>
+</html>
