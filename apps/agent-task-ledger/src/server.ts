@@ -254,7 +254,11 @@ const server = http.createServer(async (req, res) => {
 
     // GET /cold-boot — Cold boot visualization
     if (method === "GET" && url.pathname === "/cold-boot") {
-      const htmlPath = path.join(__dirname, "cold-boot.html");
+      // Try dist/src first, then src (development)
+      let htmlPath = path.join(__dirname, "cold-boot.html");
+      if (!fs.existsSync(htmlPath)) {
+        htmlPath = path.join(__dirname, "..", "..", "src", "cold-boot.html");
+      }
       if (fs.existsSync(htmlPath)) {
         const html = fs.readFileSync(htmlPath, "utf8");
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
