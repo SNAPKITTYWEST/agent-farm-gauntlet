@@ -1,4 +1,5 @@
 import * as http from "http";
+import * as fs from "fs";
 import * as path from "path";
 import { Ledger } from "./ledger";
 import { TaskManager } from "./tasks";
@@ -249,6 +250,17 @@ const server = http.createServer(async (req, res) => {
         chain_valid: ledger.verifyChain().valid,
         agents: ["FORGE", "SENTINEL", "LEDGE", "OPERATOR"],
       });
+    }
+
+    // GET /cold-boot — Cold boot visualization
+    if (method === "GET" && url.pathname === "/cold-boot") {
+      const htmlPath = path.join(__dirname, "cold-boot.html");
+      if (fs.existsSync(htmlPath)) {
+        const html = fs.readFileSync(htmlPath, "utf8");
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        return res.end(html);
+      }
+      return sendJson(res, 500, { error: "cold-boot.html not found" });
     }
 
     return sendJson(res, 404, { error: "Not found" });
