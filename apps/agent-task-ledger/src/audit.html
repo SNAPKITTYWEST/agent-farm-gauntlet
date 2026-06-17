@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>audit · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="/dashboard.css">
+<style>
+.finding{padding:10px;border-bottom:1px solid #111;font-size:11px}
+.finding:last-child{border-bottom:none}
+.finding-id{display:inline-block;width:30px;color:var(--info);font-weight:bold}
+.finding-sev{display:inline-block;padding:1px 6px;font-size:9px;border:1px solid;margin-left:8px}
+.finding-sev.CRITICAL{border-color:var(--err);color:var(--err)}
+.finding-sev.HIGH{border-color:var(--err);color:var(--err)}
+.finding-sev.MEDIUM{border-color:var(--warn);color:var(--warn)}
+.finding-sev.LOW{border-color:var(--dim);color:var(--dim)}
+.finding-file{color:var(--dim);font-size:10px}
+.finding-desc{margin-top:4px}
+.finding-status{margin-top:4px;font-size:10px}
+.finding-status.resolved{color:var(--fg)}
+.finding-status.remaining{color:var(--warn)}
+.axiom-card{padding:14px;border:1px solid var(--border);margin-bottom:8px}
+.axiom-name{color:var(--bright);font-size:12px;margin-bottom:4px}
+.axiom-quote{color:var(--dim);font-style:italic;font-size:10px;margin-bottom:8px}
+.axiom-verdict{font-size:10px;padding:2px 8px;border:1px solid}
+.axiom-verdict.pass{border-color:var(--fg);color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="scanline"></div><div class="crt"></div>
+<div class="layout">
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/cold-boot">cold-boot</a>
+    <a class="nav-link" href="/architecture">architecture</a>
+    <a class="nav-link" href="/worm">worm</a>
+    <a class="nav-link active" href="/audit">audit</a>
+    <a class="nav-link" href="/proofs">proofs</a>
+    <a class="nav-link" href="/playback">playback</a>
+  </div>
+  <div class="nav-status" id="status">loading...</div>
+</nav>
+
+<div class="content" id="app"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const app = $('app');
+
+const findings = [
+  {id:'F1',sev:'HIGH',file:'hash.ts:36',desc:'Non-constant-time hash comparison',status:'RESOLVED',fix:'timingSafeEqual'},
+  {id:'F2',sev:'HIGH',file:'server.ts:18-31',desc:'Unbounded request body parsing',status:'RESOLVED',fix:'100KB limit'},
+  {id:'F3',sev:'MEDIUM',file:'tasks.ts:179-204',desc:'rejectTask bypasses validation framework',status:'RESOLVED',fix:'validateStatusTransition'},
+  {id:'F4',sev:'MEDIUM',file:'server.ts:54,69,87',desc:'endsWith routing is ambiguous',status:'RESOLVED',fix:'regex routing'},
+  {id:'F5',sev:'MEDIUM',file:'server.ts:44,60,75,93',desc:'as any casts defeat type safety',status:'RESOLVED',fix:'typed requires'},
+  {id:'F9',sev:'MEDIUM',file:'ledger.ts:23-37',desc:'No integrity check on load',status:'RESOLVED',fix:'verifyChain() on load'},
+  {id:'F10',sev:'LOW',file:'server.ts:143-145',desc:'Error silently swallowed in catch',status:'RESOLVED',fix:'console.error'},
+  {id:'S1',sev:'HIGH',file:'server.ts:18-31',desc:'No request body size limit',status:'RESOLVED',fix:'100KB cap'},
+  {id:'S2',sev:'HIGH',file:'tasks.ts:96,124,183',desc:'Agent authentication self-reported',status:'RESOLVED',fix:'Ed25519 signing'},
+  {id:'S3',sev:'MEDIUM',file:'server.ts:54,69,87',desc:'Fragile URL routing',status:'RESOLVED',fix:'regex'},
+  {id:'S4',sev:'MEDIUM',file:'ledger.ts:30-36',desc:'Silent ledger corruption on parse failure',status:'RESOLVED',fix:'throws on corrupt'},
+  {id:'L1',sev:'HIGH',file:'hash.ts:15',desc:'Concatenation collision in hash input',status:'RESOLVED',fix:'| delimiters'},
+  {id:'L2',sev:'CRITICAL',file:'worm/001_GENESIS.json',desc:'Genesis block hash mismatch',status:'RESOLVED',fix:'recomputed hash'},
+  {id:'L3',sev:'HIGH',file:'ledger.ts:18-36',desc:'WORM files disconnected from Ledger',status:'RESOLVED',fix:'integrated'},
+  {id:'L4',sev:'MEDIUM',file:'ledger.ts:88-130',desc:'No sequence monotonicity check',status:'RESOLVED',fix:'seq === i + 1'},
+  {id:'L5',sev:'HIGH',file:'ledger.ts:80-86',desc:'No file locking on persist()',status:'RESOLVED',fix:'FileLock class'},
+  {id:'L6',sev:'MEDIUM',file:'ledger.ts:33-35',desc:'Corrupt entries silently skipped',status:'RESOLVED',fix:'throws'},
+  {id:'L9',sev:'LOW',file:'schemas/task.json:28',desc:'Schema enum mismatch (OPERATOR)',status:'RESOLVED',fix:'added OPERATOR'},
+  {id:'L10',sev:'HIGH',file:'worm/*.json',desc:'WORM files lack atomicity/immutability',status:'RESOLVED',fix:'atomicAppend + chmod'},
+];
+
+const axioms = [
+  {name:'SIMPLICITY_IS_VIOLENCE',quote:'Remove until only truth remains.',verdict:'PASS',detail:'No external dependencies. Only truth remains.'},
+  {name:'HUMANITY_BEFORE_FEATURE',quote:'Does this serve a human need for accountability?',verdict:'PASS',detail:'Cryptographic proof of human accountability.'},
+  {name:'ENTROPY_IS_CATALYST',quote:'Does the system handle chaos gracefully?',verdict:'PASS',detail:'File locks, atomic writes, chain verification.'},
+  {name:'ACCOUNTABLE_AUTHORITY',quote:'Every agent signs its decisions. No impersonation.',verdict:'PASS',detail:'Ed25519 non-repudiation. No self-reported identity.'},
+];
+
+const controls = [
+  {id:1,name:'Ed25519 per-agent signing',status:'RESOLVED',phase:'Phase 1'},
+  {id:2,name:'WORM sealed segments',status:'RESOLVED',phase:'Phase 2'},
+  {id:3,name:'Timestamp monotonicity',status:'RESOLVED',phase:'Phase 2'},
+  {id:4,name:'Startup halt on broken chain',status:'RESOLVED',phase:'Phase 2'},
+  {id:5,name:'File locking (PID-based)',status:'RESOLVED',phase:'Phase 3'},
+  {id:6,name:'Atomic writes (tmp→fsync→rename)',status:'RESOLVED',phase:'Phase 3'},
+  {id:7,name:'Body size limit (100KB)',status:'RESOLVED',phase:'Phase 2'},
+  {id:8,name:'Regex routing',status:'RESOLVED',phase:'Phase 1'},
+  {id:9,name:'Timing-safe comparison',status:'RESOLVED',phase:'Phase 1'},
+  {id:10,name:'Hash delimiter (|)',status:'RESOLVED',phase:'Phase 1'},
+  {id:11,name:'Trust Deed formalization',status:'CREATED',phase:'Phase 4'},
+  {id:12,name:'Task invariants formalization',status:'CREATED',phase:'Phase 4'},
+  {id:13,name:'Ledger chain formalization',status:'CREATED',phase:'Phase 4'},
+  {id:14,name:'AHMAD axiom review',status:'PASS',phase:'Phase 5'},
+];
+
+function init() {
+  const resolved = findings.filter(f => f.status === 'RESOLVED').length;
+  const critical = findings.filter(f => f.sev === 'CRITICAL').length;
+  const high = findings.filter(f => f.sev === 'HIGH').length;
+
+  $('status').textContent = `${findings.length} findings · ${resolved} resolved · ${critical} critical · ${high} high`;
+
+  // ─── SUMMARY ───
+  const summary = document.createElement('div');
+  summary.className = 'card';
+  summary.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Audit Summary</span>
+      <span class="card-badge pass">ALL RESOLVED</span>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-4">
+        <div class="stat-row"><span class="stat-label">Total Findings</span><span class="stat-value">${findings.length}</span></div>
+        <div class="stat-row"><span class="stat-label">Resolved</span><span class="stat-value pass">${resolved}</span></div>
+        <div class="stat-row"><span class="stat-label">Critical</span><span class="stat-value ${critical > 0 ? 'fail' : 'pass'}">${critical}</span></div>
+        <div class="stat-row"><span class="stat-label">High</span><span class="stat-value ${high > 0 ? 'warn' : 'pass'}">${high}</span></div>
+      </div>
+    </div>`;
+  app.appendChild(summary);
+
+  // ─── FINDINGS ───
+  const findingsCard = document.createElement('div');
+  findingsCard.className = 'card';
+  findingsCard.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Findings (FORGE + SENTINEL + LEDGE)</span>
+      <span class="card-badge">${findings.length} TOTAL</span>
+    </div>
+    <div class="card-body" id="findings-list"></div>`;
+  app.appendChild(findingsCard);
+
+  const list = findingsCard.querySelector('#findings-list');
+  for (const f of findings) {
+    const div = document.createElement('div');
+    div.className = 'finding';
+    div.innerHTML = `
+      <div>
+        <span class="finding-id">${f.id}</span>
+        <span class="finding-sev ${f.sev}">${f.sev}</span>
+        <span class="finding-file">${f.file}</span>
+      </div>
+      <div class="finding-desc">${f.desc}</div>
+      <div class="finding-status resolved">✓ ${f.status} — ${f.fix}</div>`;
+    list.appendChild(div);
+  }
+
+  // ─── AHMAD AXIOMS ───
+  const axiomsCard = document.createElement('div');
+  axiomsCard.className = 'card';
+  axiomsCard.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">AHMAD Axiom Review</span>
+      <span class="card-badge pass">4/4 PASS</span>
+    </div>
+    <div class="card-body" id="axiom-list"></div>`;
+  app.appendChild(axiomsCard);
+
+  const axiomList = axiomsCard.querySelector('#axiom-list');
+  for (const a of axioms) {
+    const div = document.createElement('div');
+    div.className = 'axiom-card';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="axiom-name">${a.name}</div>
+        <span class="axiom-verdict pass">${a.verdict}</span>
+      </div>
+      <div class="axiom-quote">"${a.quote}"</div>
+      <div style="font-size:10px;color:var(--dim)">${a.detail}</div>`;
+    axiomList.appendChild(div);
+  }
+
+  // ─── CONTROL MATRIX ───
+  const controlsCard = document.createElement('div');
+  controlsCard.className = 'card';
+  controlsCard.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Control Matrix</span>
+      <span class="card-badge">${controls.length} CONTROLS</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><th>#</th><th>Control</th><th>Phase</th><th>Status</th></tr>
+        ${controls.map(c => `<tr>
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td style="color:var(--dim)">${c.phase}</td>
+          <td style="color:${c.status === 'RESOLVED' ? 'var(--fg)' : 'var(--warn)'}">${c.status}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  app.appendChild(controlsCard);
+}
+
+init();
+</script>
+</body>
+</html>

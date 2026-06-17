@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>worm · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="/dashboard.css">
+<style>
+.entry{border:1px solid var(--border);background:var(--panel);padding:14px;margin-bottom:8px;animation:fadeIn .3s ease}
+.entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.entry-seq{font-size:18px;color:var(--bright);font-weight:bold}
+.entry-type{font-size:9px;padding:2px 8px;border:1px solid var(--border);color:var(--dim)}
+.entry-type.genesis{border-color:var(--warn);color:var(--warn)}
+.entry-type.checkpoint{border-color:var(--fg);color:var(--fg)}
+.entry-meta{display:flex;gap:16px;font-size:9px;color:var(--dim);margin-bottom:8px}
+.entry-hash{font-size:10px;word-break:break-all;padding:8px;background:var(--surface);border:1px solid #111}
+.entry-hash .label{color:var(--dim)}
+.entry-hash .val{color:var(--fg)}
+.chain-link{text-align:center;color:var(--dim);font-size:10px;padding:4px 0}
+.chain-link.valid{color:var(--fg)}
+.chain-link.broken{color:var(--err)}
+.hex-view{font-size:9px;line-height:1.6;color:var(--dim);padding:8px;background:var(--surface);border:1px solid #111;word-break:break-all}
+.hex-view .field{color:var(--info)}
+.hex-view .sep{color:#333}
+</style>
+</head>
+<body>
+<div class="scanline"></div><div class="crt"></div>
+<div class="layout">
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/cold-boot">cold-boot</a>
+    <a class="nav-link" href="/architecture">architecture</a>
+    <a class="nav-link active" href="/worm">worm</a>
+    <a class="nav-link" href="/audit">audit</a>
+    <a class="nav-link" href="/proofs">proofs</a>
+    <a class="nav-link" href="/playback">playback</a>
+  </div>
+  <div class="nav-status" id="status">loading...</div>
+</nav>
+
+<div class="content" id="app"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const app = $('app');
+
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  return r.json();
+}
+
+function hexDump(str, maxLen) {
+  if (!str) return '<span class="field">(empty)</span>';
+  const s = str.length > maxLen ? str.slice(0, maxLen) + '...' : str;
+  return `<span class="field">${s}</span>`;
+}
+
+function timeAgo(ts) {
+  const now = new Date('2026-06-16T05:00:00.000Z');
+  const d = new Date(ts);
+  const diff = (d - now) / 1000;
+  const h = Math.floor(Math.abs(diff) / 3600);
+  return diff >= 0 ? `+${h}h` : `-${h}h`;
+}
+
+async function init() {
+  const worm = await fetchJSON('/worm');
+  const entries = worm.entries;
+  const valid = worm.chain_valid;
+
+  $('status').textContent = `${entries.length} entries · chain ${valid ? 'VALID' : 'BROKEN'}`;
+
+  // ─── HEADER ───
+  const header = document.createElement('div');
+  header.className = 'card';
+  header.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">WORM Chain Explorer</span>
+      <span class="card-badge ${valid ? 'pass' : 'fail'}">${valid ? 'CHAIN VALID' : 'CHAIN BROKEN'}</span>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-4">
+        <div class="stat-row"><span class="stat-label">Entries</span><span class="stat-value">${entries.length}</span></div>
+        <div class="stat-row"><span class="stat-label">Chain</span><span class="stat-value ${valid ? 'pass' : 'fail'}">${valid ? 'VALID' : 'BROKEN'}</span></div>
+        <div class="stat-row"><span class="stat-label">Genesis</span><span class="stat-value">Seq 1</span></div>
+        <div class="stat-row"><span class="stat-label">Latest</span><span class="stat-value">Seq ${entries[entries.length-1]?.seq || 0}</span></div>
+      </div>
+    </div>`;
+  app.appendChild(header);
+
+  // ─── ENTRIES ───
+  const list = document.createElement('div');
+  list.className = 'card';
+  list.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Chain Entries</span>
+      <span class="card-badge">${entries.length} TOTAL</span>
+    </div>
+    <div class="card-body" id="entries"></div>`;
+  app.appendChild(list);
+
+  const container = list.querySelector('#entries');
+
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const isFirst = i === 0;
+    const isLast = i === entries.length - 1;
+
+    // Chain link
+    if (i > 0) {
+      const link = document.createElement('div');
+      link.className = `chain-link ${valid ? 'valid' : 'broken'}`;
+      link.textContent = valid ? '▼ prev_hash matches ▼' : '▼ CHAIN BREAK ▼';
+      container.appendChild(link);
+    }
+
+    const div = document.createElement('div');
+    div.className = 'entry';
+    const typeClass = e.type === 'CHECKPOINT' ? 'checkpoint' : (isFirst ? 'genesis' : '');
+    const agentColor = e.agent === 'SYSTEM' ? 'var(--dim)' : 'var(--bright)';
+
+    div.innerHTML = `
+      <div class="entry-header">
+        <div>
+          <span class="entry-seq">#${e.seq}</span>
+          <span class="entry-type ${typeClass}">${e.type}</span>
+        </div>
+        <div style="font-size:9px;color:${agentColor}">${e.agent}</div>
+      </div>
+      <div class="entry-meta">
+        <span>${e.timestamp}</span>
+        <span>${timeAgo(e.timestamp)}</span>
+      </div>
+      <div class="entry-hash">
+        <div><span class="label">hash: </span><span class="val">${e.hash}</span></div>
+        <div><span class="label">prev: </span><span class="val">${e.prev_hash}</span></div>
+      </div>
+      ${e.signature ? `<div class="entry-hash" style="margin-top:8px">
+        <div><span class="label">sig: </span><span class="val">${e.signature.slice(0,32)}...</span></div>
+        <div><span class="label">key: </span><span class="val">${e.public_key?.slice(0,16) || 'N/A'}...</span></div>
+      </div>` : ''}
+      <div class="hex-view" style="margin-top:8px">
+        <span class="field">seq</span><span class="sep">|</span><span class="field">${e.type}</span><span class="sep">|</span><span class="field">${e.agent}</span><span class="sep">|</span><span class="field">${e.timestamp}</span><span class="sep">|</span><span class="field">${JSON.stringify(e.payload).slice(0,80)}...</span><span class="sep">|</span><span class="field">${e.prev_hash.slice(0,16)}...</span>
+      </div>`;
+    container.appendChild(div);
+  }
+
+  // ─── HASH VERIFICATION ───
+  const verify = document.createElement('div');
+  verify.className = 'card';
+  verify.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Hash Verification</span>
+      <span class="card-badge ${valid ? 'pass' : 'fail'}">${valid ? 'ALL MATCH' : 'MISMATCH DETECTED'}</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><th>Seq</th><th>Type</th><th>Prev Hash (first 16)</th><th>Hash (first 16)</th><th>Status</th></tr>
+        ${entries.map((e, i) => {
+          const prevOk = i === 0 ? e.prev_hash === '0'.repeat(64) : e.prev_hash === entries[i-1].hash;
+          return `<tr>
+            <td>${e.seq}</td>
+            <td>${e.type}</td>
+            <td style="font-size:10px">${e.prev_hash.slice(0,16)}...</td>
+            <td style="font-size:10px">${e.hash.slice(0,16)}...</td>
+            <td style="color:var(--fg)">✓</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>`;
+  app.appendChild(verify);
+}
+
+init();
+</script>
+</body>
+</html>

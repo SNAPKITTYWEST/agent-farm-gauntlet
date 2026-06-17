@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>architecture · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+<div class="scanline"></div><div class="crt"></div>
+<div class="layout">
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/cold-boot">cold-boot</a>
+    <a class="nav-link active" href="/architecture">architecture</a>
+    <a class="nav-link" href="/worm">worm</a>
+    <a class="nav-link" href="/audit">audit</a>
+    <a class="nav-link" href="/proofs">proofs</a>
+    <a class="nav-link" href="/playback">playback</a>
+  </div>
+  <div class="nav-status" id="status">loading...</div>
+</nav>
+
+<div class="content" id="app"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const app = $('app');
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+}
+
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  return r.json();
+}
+
+async function init() {
+  const [health, worm] = await Promise.all([
+    fetchJSON('/health'),
+    fetchJSON('/worm')
+  ]);
+
+  $('status').textContent = `v0.1.0-gauntlet · ${health.ledger_length} entries · chain ${health.chain_valid ? 'VALID' : 'BROKEN'}`;
+
+  // ─── GOVERNANCE STACK ───
+  const stack = el('div', 'card');
+  stack.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Governance Stack</span>
+      <span class="card-badge pass">CONSTITUTION-GOVERNED</span>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:2px;font-size:11px">
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          CONSTITUTION — Supreme governance (86 lines, immutable)
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          TRUST DEED — TD-GAUNTLET-001 (4 obligations, 4 conditions)
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          AGENT RUNTIME — 8 source files, 996 lines, Ed25519 signing
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          SENTINEL REVIEW — Security audit, injection check, auth verification
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--warn)">
+          LEAN 4 PROOFS — 7 proven, 2 sorry, 5 axioms
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          HUMAN APPROVAL — OPERATOR: Jessica Westerhoff
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:2px solid var(--fg);background:var(--surface);text-align:center;color:var(--fg)">
+          DEPLOYMENT GATE — 4 conditions met → PRODUCTION APPROVED
+        </div>
+        <div style="text-align:center;color:var(--dim)">▼</div>
+        <div style="padding:10px 14px;border:1px solid var(--border);background:var(--surface);text-align:center;color:var(--bright)">
+          WORM LEDGER — ${health.ledger_length} entries, hash-chained, append-only
+        </div>
+      </div>
+    </div>`;
+  app.appendChild(stack);
+
+  // ─── FILE TREE ───
+  const tree = el('div', 'card');
+  tree.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Repository Tree</span>
+      <span class="card-badge">54 FILES · 5,499 LINES</span>
+    </div>
+    <div class="card-body">
+      <div class="tree">
+        <div><span class="dir">agent-farm-gauntlet/</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">constitution/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">CONSTITUTION.md</span> <span style="color:var(--dim)">— 62 lines, supreme governance</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">SENTINEL_RULES.md</span> <span style="color:var(--dim)">— 28 lines, stop conditions</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">FAILURE_MODES.md</span> <span style="color:var(--dim)">— 36 lines, F-001..F-007</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">deeds/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">TRUST_DEED.md</span> <span style="color:var(--dim)">— 48 lines, TD-GAUNTLET-001</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">schemas/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">task.json</span> <span style="color:var(--dim)">— 60 lines, Task schema</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">ledger.json</span> <span style="color:var(--dim)">— 68 lines, LedgerEntry schema</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">agents/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">ALLOWED_AGENTS.md</span> <span style="color:var(--dim)">— 14 lines, FORGE SENTINEL LEDGE OPERATOR</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">proofs/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">TrustDeed.lean</span> <span style="color:var(--dim)">— 70 lines, 3 proven theorems</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">TaskInvariants.lean</span> <span style="color:var(--dim)">— 76 lines, 4 proven theorems</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="lean">LedgerChain.lean</span> <span style="color:var(--dim)">— 89 lines, 2 sorry</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">apps/agent-task-ledger/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">src/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">types.ts</span> <span style="color:var(--dim)">— 50 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">hash.ts</span> <span style="color:var(--dim)">— 37 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">validation.ts</span> <span style="color:var(--dim)">— 57 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">ledger.ts</span> <span style="color:var(--dim)">— 196 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">tasks.ts</span> <span style="color:var(--dim)">— 184 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">server.ts</span> <span style="color:var(--dim)">— 281 lines, entry point</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">agent-keys.ts</span> <span style="color:var(--dim)">— 132 lines, Ed25519</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">file-lock.ts</span> <span style="color:var(--dim)">— 101 lines, atomic writes</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">cold-boot.html</span> <span style="color:var(--dim)">— terminal UX</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">dashboard.css</span> <span style="color:var(--dim)">— shared styles</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">architecture.html</span> <span style="color:var(--dim)">— this page</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">worm.html</span> <span style="color:var(--dim)">— WORM explorer</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">audit.html</span> <span style="color:var(--dim)">— audit explorer</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">proofs.html</span> <span style="color:var(--dim)">— proof explorer</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">playback.html</span> <span style="color:var(--dim)">— playback timeline</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">tests/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ts">server.test.ts</span> <span style="color:var(--dim)">— 291 lines, 21 tests</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">worm/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">001_GENESIS.json</span> <span style="color:var(--dim)">— chain root</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">002_PHASE1_COMPLETE.json</span> <span style="color:var(--dim)">— phase 1</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">003_PHASE3_COMPLETE.json</span> <span style="color:var(--dim)">— phase 3</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="json">004_through_008_CHECKPOINTS.jsonl</span> <span style="color:var(--dim)">— hardening</span></div>
+        <div>&nbsp;&nbsp;<span class="dir">audit/</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">CHAINLINE.md</span> <span style="color:var(--dim)">— 138 lines, 8-gate orchestration</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">FINDINGS.md</span> <span style="color:var(--dim)">— 61 lines, 25 findings</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">FINAL_REPORT.md</span> <span style="color:var(--dim)">— 144 lines</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">AHMAD_REVIEW.md</span> <span style="color:var(--dim)">— 192 lines, 4 axioms</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">AUDIT_TABLE.md</span> <span style="color:var(--dim)">— 145 lines, 14 controls</span></div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="md">PLAYBACK_MIRROR_REPORT.md</span> <span style="color:var(--dim)">— 949 lines</span></div>
+      </div>
+    </div>`;
+  app.appendChild(tree);
+
+  // ─── SECURITY MODEL ───
+  const sec = el('div', 'card');
+  sec.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Security Model</span>
+      <span class="card-badge pass">ENFORCED</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><th>Control</th><th>Mechanism</th><th>Status</th></tr>
+        <tr><td>Agent Identity</td><td>Ed25519 keypairs, per-agent</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Request Signing</td><td>requireSignedAgent middleware</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Hash Chain</td><td>SHA-256 with | delimiters</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Timestamp Monotonicity</td><td>verifyChain() check</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Sequence Monotonicity</td><td>seq === i + 1</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Atomic Writes</td><td>tmp → fsync → rename</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>File Locking</td><td>PID-based stale detection</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>Body Size Limit</td><td>100KB max</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>State Machine</td><td>Validated transitions</td><td style="color:var(--fg)">ENFORCED</td></tr>
+        <tr><td>WORM Immutability</td><td>chmod 0o444 after seal</td><td style="color:var(--warn)">OS-LEVEL</td></tr>
+        <tr><td>Tamper Detection</td><td>Hash chain (sorry in Lean)</td><td style="color:var(--warn)">PARTIAL</td></tr>
+      </table>
+    </div>`;
+  app.appendChild(sec);
+}
+
+init();
+</script>
+</body>
+</html>

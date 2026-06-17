@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>proofs · agent-farm-gauntlet</title>
+<link rel="stylesheet" href="/dashboard.css">
+<style>
+.proof-block{border:1px solid var(--border);background:var(--panel);margin-bottom:8px}
+.proof-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+.proof-name{color:var(--bright);font-size:12px}
+.proof-status{font-size:9px;padding:2px 8px;border:1px solid}
+.proof-status.proven{border-color:var(--fg);color:var(--fg)}
+.proof-status.sorry{border-color:var(--warn);color:var(--warn)}
+.proof-status.axiom{border-color:var(--info);color:var(--info)}
+.proof-body{padding:14px}
+.proof-item{padding:8px 0;border-bottom:1px solid #111;font-size:11px;display:flex;justify-content:space-between;align-items:center}
+.proof-item:last-child{border-bottom:none}
+.proof-kind{font-size:9px;padding:1px 6px;border:1px solid;margin-right:8px}
+.proof-kind.theorem{border-color:var(--fg);color:var(--fg)}
+.proof-kind.axiom{border-color:var(--info);color:var(--info)}
+.proof-kind.structure{border-color:var(--dim);color:var(--dim)}
+.proof-kind.definition{border-color:var(--dim);color:var(--dim)}
+.proof-source{font-size:9px;color:var(--dim);font-family:var(--font)}
+.code-block{background:var(--surface);border:1px solid var(--border);padding:12px;font-size:10px;line-height:1.6;overflow-x:auto;color:var(--fg)}
+.code-block .kw{color:var(--info)}
+.code-block .ty{color:var(--warn)}
+.code-block .fn{color:var(--bright)}
+.code-block .cm{color:var(--dim)}
+.code-block .st{color:var(--err)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.summary-item{text-align:center;padding:12px;border:1px solid var(--border);background:var(--surface)}
+.summary-num{font-size:24px;color:var(--bright)}
+.summary-label{font-size:9px;color:var(--dim);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="scanline"></div><div class="crt"></div>
+<div class="layout">
+<nav class="nav">
+  <div class="nav-brand">agent-farm-gauntlet</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/cold-boot">cold-boot</a>
+    <a class="nav-link" href="/architecture">architecture</a>
+    <a class="nav-link" href="/worm">worm</a>
+    <a class="nav-link" href="/audit">audit</a>
+    <a class="nav-link active" href="/proofs">proofs</a>
+    <a class="nav-link" href="/playback">playback</a>
+  </div>
+  <div class="nav-status" id="status">loading...</div>
+</nav>
+
+<div class="content" id="app"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const app = $('app');
+
+const proofs = {
+  TrustDeed: {
+    file: 'proofs/TrustDeed.lean',
+    lines: 70,
+    items: [
+      {kind:'structure',name:'TrustDeed',desc:'4 Bool fields: security_passed, compliance_passed, logic_passed, human_approved',status:'defined'},
+      {kind:'definition',name:'deed_valid',desc:'d.security_passed ∧ d.compliance_passed ∧ d.logic_passed ∧ d.human_approved',status:'defined'},
+      {kind:'definition',name:'deployment_allowed',desc:'deed_valid d',status:'defined'},
+      {kind:'theorem',name:'deployment_implies_security',desc:'deployment_allowed d → d.security_passed = true',status:'proven',proof:'exact h.1'},
+      {kind:'theorem',name:'deployment_implies_human_approval',desc:'deployment_allowed d → d.human_approved = true',status:'proven',proof:'exact h.2.2.2'},
+      {kind:'structure',name:'AgentIdentity',desc:'agent_id, public_key, signature, payload_hash',status:'defined'},
+      {kind:'definition',name:'identity_valid',desc:'All fields non-empty, payload_hash is 64 hex chars',status:'defined'},
+      {kind:'axiom',name:'no_unsigned_action',desc:'¬ identity_valid id → ¬ deployment_allowed ⟨false,false,false,false⟩',status:'axiom'},
+      {kind:'definition',name:'forbidden_actions',desc:'production_deploy, credential_access, file_deletion, ...',status:'defined'},
+      {kind:'definition',name:'action_allowed',desc:'¬ (forbidden_actions.contains action) ∨ operator_approved = true',status:'defined'},
+      {kind:'theorem',name:'trust_deed_is_supreme',desc:'∀ d action, deployment_allowed d → action_allowed action true',status:'proven',proof:'right; rfl'},
+    ]
+  },
+  TaskInvariants: {
+    file: 'proofs/TaskInvariants.lean',
+    lines: 76,
+    items: [
+      {kind:'structure',name:'TaskStatus',desc:'inductive: pending | in_progress | completed | rejected',status:'defined'},
+      {kind:'definition',name:'valid_transition',desc:'6 valid transitions defined',status:'defined'},
+      {kind:'theorem',name:'completed_is_terminal',desc:'valid_transition .completed s = false',status:'proven',proof:'rfl'},
+      {kind:'theorem',name:'rejected_is_terminal',desc:'valid_transition .rejected s = false',status:'proven',proof:'rfl'},
+      {kind:'theorem',name:'pending_cannot_complete',desc:'valid_transition .pending .completed = false',status:'proven',proof:'rfl'},
+      {kind:'theorem',name:'in_progress_cannot_rollback',desc:'valid_transition .in_progress .pending = false',status:'proven',proof:'rfl'},
+      {kind:'structure',name:'AgentName',desc:'inductive: FORGE | SENTINEL | LEDGE | OPERATOR',status:'defined'},
+      {kind:'structure',name:'Task',desc:'id, title, assignee, status, created_at',status:'defined'},
+      {kind:'axiom',name:'only_assignee_completes',desc:'Agent ≠ assignee → valid_transition .in_progress .completed = false',status:'axiom'},
+      {kind:'definition',name:'valid_task_id',desc:'id.length ≥ 13 ∧ id.startsWith "task-"',status:'defined'},
+      {kind:'axiom',name:'task_created_has_task',desc:'entry_type = "TASK_CREATED" → payload.length > 0',status:'axiom'},
+    ]
+  },
+  LedgerChain: {
+    file: 'proofs/LedgerChain.lean',
+    lines: 89,
+    items: [
+      {kind:'structure',name:'LedgerEntry',desc:'seq, hash, prev_hash, timestamp, agent, signature',status:'defined'},
+      {kind:'definition',name:'GENESIS_PREV_HASH',desc:'"0000000000000000000000000000000000000000000000000000000000000000"',status:'defined'},
+      {kind:'definition',name:'is_genesis',desc:'e.seq == 1 ∧ e.prev_hash == GENESIS_PREV_HASH',status:'defined'},
+      {kind:'definition',name:'chain_valid_pair',desc:'curr.prev_hash = prev.hash ∧ curr.seq = prev.seq + 1 ∧ curr.timestamp ≥ prev.timestamp',status:'defined'},
+      {kind:'axiom',name:'append_preserves_validity',desc:'chain_valid entries → chain_valid_pair last new → chain_valid (entries ++ [new])',status:'axiom'},
+      {kind:'theorem',name:'tamper_detected',desc:'Modifying any entry breaks the chain',status:'sorry',proof:'sorry — requires hash chain induction'},
+      {kind:'definition',name:'sequence_monotonic',desc:'∀ i, entries[i].seq = i + 1',status:'defined'},
+      {kind:'theorem',name:'chain_implies_monotonic',desc:'chain_valid entries → sequence_monotonic entries',status:'sorry',proof:'sorry — follows from chain_valid_pair'},
+      {kind:'axiom',name:'signature_required',desc:'entry.agent ≠ "SYSTEM" → entry.signature.length > 0',status:'axiom'},
+    ]
+  }
+};
+
+function init() {
+  let totalProven = 0, totalSorry = 0, totalAxioms = 0;
+  for (const p of Object.values(proofs)) {
+    for (const item of p.items) {
+      if (item.status === 'proven') totalProven++;
+      if (item.status === 'sorry') totalSorry++;
+      if (item.status === 'axiom') totalAxioms++;
+    }
+  }
+
+  $('status').textContent = `3 files · ${totalProven} proven · ${totalSorry} sorry · ${totalAxioms} axioms`;
+
+  // ─── SUMMARY ───
+  const summary = document.createElement('div');
+  summary.className = 'card';
+  summary.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Formal Verification Summary</span>
+      <span class="card-badge warn">PARTIAL</span>
+    </div>
+    <div class="card-body">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-num" style="color:var(--fg)">${totalProven}</div>
+          <div class="summary-label">PROVEN THEOREMS</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-num" style="color:var(--warn)">${totalSorry}</div>
+          <div class="summary-label">SORRY (PROOF OBLIGATIONS)</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-num" style="color:var(--info)">${totalAxioms}</div>
+          <div class="summary-label">AXIOMS (ASSUMED)</div>
+        </div>
+      </div>
+    </div>`;
+  app.appendChild(summary);
+
+  // ─── PROOF FILES ───
+  for (const [name, data] of Object.entries(proofs)) {
+    const card = document.createElement('div');
+    card.className = 'proof-block';
+    const proven = data.items.filter(i => i.status === 'proven').length;
+    const sorry = data.items.filter(i => i.status === 'sorry').length;
+
+    card.innerHTML = `
+      <div class="proof-header">
+        <div>
+          <span class="proof-name">${name}.lean</span>
+          <span style="font-size:9px;color:var(--dim);margin-left:8px">${data.lines} lines · ${data.file}</span>
+        </div>
+        <div>
+          ${proven > 0 ? `<span class="proof-status proven">${proven} proven</span>` : ''}
+          ${sorry > 0 ? `<span class="proof-status sorry">${sorry} sorry</span>` : ''}
+        </div>
+      </div>
+      <div class="proof-body">
+        ${data.items.map(item => `
+          <div class="proof-item">
+            <div>
+              <span class="proof-kind ${item.kind}">${item.kind}</span>
+              <span style="color:var(--bright)">${item.name}</span>
+              <span style="color:var(--dim);margin-left:8px;font-size:10px">${item.desc}</span>
+            </div>
+            <div>
+              ${item.status === 'proven' ? `<span class="proof-status proven">PROVEN</span>` : ''}
+              ${item.status === 'sorry' ? `<span class="proof-status sorry">sorry</span>` : ''}
+              ${item.status === 'axiom' ? `<span class="proof-status axiom">AXIOM</span>` : ''}
+              ${item.status === 'defined' ? `<span style="color:var(--dim);font-size:9px">defined</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    app.appendChild(card);
+  }
+
+  // ─── RUNTIME ENFORCEMENT ───
+  const runtime = document.createElement('div');
+  runtime.className = 'card';
+  runtime.innerHTML = `
+    <div class="card-header">
+      <span class="card-title">Runtime Enforcement (not formally proven)</span>
+      <span class="card-badge">RUNTIME</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><th>Property</th><th>Enforcement</th><th>Location</th></tr>
+        <tr><td>Ed25519 signature verification</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/agent-keys.ts</td></tr>
+        <tr><td>Hash chain integrity</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/ledger.ts verifyChain()</td></tr>
+        <tr><td>Timestamp monotonicity</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/ledger.ts verifyChain()</td></tr>
+        <tr><td>Sequence monotonicity</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/ledger.ts verifyChain()</td></tr>
+        <tr><td>Atomic writes</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/file-lock.ts</td></tr>
+        <tr><td>File locking</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/file-lock.ts</td></tr>
+        <tr><td>Body size limits</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/server.ts</td></tr>
+        <tr><td>State machine transitions</td><td style="color:var(--fg)">ENFORCED</td><td style="color:var(--dim)">src/validation.ts</td></tr>
+      </table>
+    </div>`;
+  app.appendChild(runtime);
+}
+
+init();
+</script>
+</body>
+</html>
