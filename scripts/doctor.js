@@ -9,6 +9,7 @@ const ROOT = path.join(__dirname, "..");
 const APP = path.join(ROOT, "apps", "agent-task-ledger");
 const SRC = path.join(APP, "src");
 const DIST = path.join(APP, "dist");
+const ROOT_DIST = path.join(ROOT, "dist");
 const DATA = path.join(APP, "data");
 const WORM = path.join(ROOT, "worm");
 const PROOFS = path.join(ROOT, "proofs");
@@ -48,7 +49,7 @@ for (const f of ["types.ts", "hash.ts", "validation.ts", "ledger.ts", "tasks.ts"
 
 console.log("\nBuild output:");
 check("dist/ exists", () => fs.existsSync(DIST));
-check("dist/server.js", () => fs.existsSync(path.join(DIST, "server.js")));
+check("dist/src/server.js", () => fs.existsSync(path.join(DIST, "src", "server.js")));
 
 console.log("\nGovernance:");
 for (const f of ["CONSTITUTION.md", "SENTINEL_RULES.md", "FAILURE_MODES.md"]) {
