@@ -1,0 +1,7 @@
+node_modules/
+dist/
+apps/agent-task-ledger/data/
+.env
+*.log
+.DS_Store
+Thumbs.db

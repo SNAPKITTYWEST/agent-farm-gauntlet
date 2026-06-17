@@ -1,0 +1,23 @@
+{
+  "seq": 1,
+  "type": "CHECKPOINT",
+  "agent": "SYSTEM",
+  "timestamp": "2026-06-16T00:00:00.000Z",
+  "payload": {
+    "action": "GENESIS",
+    "description": "Repository initialized. Constitution, schemas, and trust deed sealed.",
+    "files_sealed": [
+      "constitution/CONSTITUTION.md",
+      "constitution/SENTINEL_RULES.md",
+      "constitution/FAILURE_MODES.md",
+      "deeds/TRUST_DEED.md",
+      "schemas/task.json",
+      "schemas/ledger.json",
+      "agents/ALLOWED_AGENTS.md"
+    ],
+    "constitution_hash": "1b365d20c545c0cac504429f0defc1013e5f22e9c4ca0c11c4ad15c69b7dc051",
+    "schema_hash": "b3049499d4fcd9aa2d94ddc85c002e102eb8226464bc5788eec6e35a2f23e630"
+  },
+  "hash": "5e3aeee27a4980e55e165bd55441c87acee841ccda780e9d2a5e4eaf852e4c65",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "agent-farm-gauntlet",
+  "version": "1.0.0",
+  "description": "Minimal Agent Task Ledger with WORM audit trail, Ed25519 signing, and formal verification",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --workspace=apps/agent-task-ledger",
+    "test": "npm test --workspace=apps/agent-task-ledger",
+    "start": "npm start --workspace=apps/agent-task-ledger",
+    "verify": "npm run build && npm test && node scripts/verify-chain.js",
+    "demo": "bash scripts/demo.sh",
+    "doctor": "node scripts/doctor.js",
+    "clean": "rm -rf apps/agent-task-ledger/dist apps/agent-task-ledger/data"
+  },
+  "workspaces": [
+    "apps/agent-task-ledger"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "agent",
+    "task-ledger",
+    "worm",
+    "audit-trail",
+    "ed25519",
+    "formal-verification"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,63 @@
+# Task Schema
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task",
+  "type": "object",
+  "required": ["id", "title", "assignee", "status", "created_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^task-[a-f0-9]{8}$",
+      "description": "Unique task identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Task title"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Optional task description"
+    },
+    "assignee": {
+      "type": "string",
+      "enum": ["FORGE", "SENTINEL", "LEDGE", "OPERATOR"],
+      "description": "Agent assigned to this task"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "completed", "rejected"],
+      "description": "Current task status"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "completed_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 completion timestamp"
+    },
+    "completed_by": {
+      "type": ["string", "null"],
+      "enum": [null, "FORGE", "SENTINEL", "LEDGE"],
+      "description": "Agent that completed the task"
+    }
+  },
+  "additionalProperties": false
+}
+```
+
+## Validation Rules
+
+1. `id` must match pattern `task-[a-f0-9]{8}`
+2. `title` must be non-empty, max 200 chars
+3. `assignee` must be one of: FORGE, SENTINEL, LEDGE
+4. `status` transitions: pending → in_progress → completed/rejected
+5. `completed_at` must be set when status is completed
+6. `completed_by` must match assignee when status is completed

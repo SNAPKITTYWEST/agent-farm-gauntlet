@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  agent-task-ledger:
+    build: .
+    ports:
+      - "3847:3847"
+    environment:
+      - PORT=3847
+      - HOST=127.0.0.1
+    volumes:
+      - ledger-data:/app/apps/agent-task-ledger/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3847/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  ledger-data:

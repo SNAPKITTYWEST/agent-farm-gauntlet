@@ -1,0 +1,73 @@
+# Ledger Entry Schema
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LedgerEntry",
+  "type": "object",
+  "required": ["seq", "type", "agent", "timestamp", "payload", "hash", "prev_hash"],
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonic sequence number"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "TASK_CREATED",
+        "TASK_ASSIGNED",
+        "TASK_COMPLETED",
+        "TASK_REJECTED",
+        "ACTION_SEALED",
+        "BREACH",
+        "DUPLICATE",
+        "REJECTED",
+        "CHECKPOINT"
+      ],
+      "description": "Event type"
+    },
+    "agent": {
+      "type": "string",
+      "enum": ["FORGE", "SENTINEL", "LEDGE", "OPERATOR", "SYSTEM"],
+      "description": "Agent that produced this entry"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-specific data"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of this entry"
+    },
+    "prev_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of previous entry (or GENESIS for first entry)"
+    }
+  },
+  "additionalProperties": false
+}
+```
+
+## Hash Chain Rules
+
+1. First entry has `prev_hash = "0".repeat(64)` (genesis block)
+2. Each subsequent entry's `prev_hash` must equal the previous entry's `hash`
+3. `hash = SHA-256(seq + type + agent + timestamp + JSON.stringify(payload) + prev_hash)`
+4. Any break in the chain halts all operations (F-004)
+
+## Integrity Verification
+
+```text
+For each entry E[i] where i > 0:
+  assert E[i].prev_hash == E[i-1].hash
+  assert E[i].hash == compute_hash(E[i])
+  assert E[i].seq == E[i-1].seq + 1
+```
