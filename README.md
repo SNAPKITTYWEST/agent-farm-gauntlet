@@ -155,3 +155,5 @@ Static docs served via GitHub Pages from `docs/`:
 ## License
 
 MIT
+
+![](https://sovereign-analytics.snapkittywest.workers.dev/canary/agent-farm-gauntlet)
